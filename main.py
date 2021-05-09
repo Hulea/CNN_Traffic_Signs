@@ -1,12 +1,10 @@
 import pandas
 import numpy as np
-import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dropout, Flatten, Dense, Conv2D, MaxPool2D
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
-from PIL import Image
 
 
 classes = {0: 'Speed limit (20km/h)',
@@ -56,30 +54,14 @@ classes = {0: 'Speed limit (20km/h)',
 
 # Folosim doar ClassId si Path din csv, scoatem celelalte coloane
 train_df = pandas.read_csv('E:/~PI/Traffic_Sign_Detection/german/Train.csv')
-# print(train_df.describe())
-# train_df = train_df.drop(['Width', 'Height', 'Roi.X1', 'Roi.Y1', 'Roi.X2', 'Roi.Y2'], axis=1)
-# print(train_df.head())
 
-# Distributia imaginilor din dataset
-# train_df['ClassId'].value_counts().plot.bar(figsize=(10,5))
-# plt.show()
-
-
-# pathuri pt id-uri imagini
 filenames = ['E:/~PI/Traffic_Sign_Detection/german/' + fname for fname in train_df['Path']]
-# print("\nFilenames:")
-# print(filenames[:10])
 labels = train_df['ClassId'].to_numpy()
-# print("Labels:")
-# print(labels)
 unique_signs = np.unique(labels)
-# print("Number of unique signs:" + str(len(unique_signs)))
 
 
-# One-hot encoding 000100
+# One-hot encoding
 labels = tf.keras.utils.to_categorical(labels, 43)
-# print(labels[0])
-# print(len(labels))
 
 
 X = filenames
@@ -114,7 +96,6 @@ BATCH_SIZE = 64
 
 
 def create_data_batches(X, y=None, batch_size=BATCH_SIZE, valid_data=False, test_data=False):
-    # if the data is a test dataset, we dont have labels
     if test_data:
         print("\nCreating test data batches...\n")
         data = tf.data.Dataset.from_tensor_slices((tf.constant(X)))
@@ -122,42 +103,22 @@ def create_data_batches(X, y=None, batch_size=BATCH_SIZE, valid_data=False, test
     elif valid_data:
         print("\nCreating validation dataset batches...\n")
         data = tf.data.Dataset.from_tensor_slices((tf.constant(X), tf.constant(y)))
-        # Create (image, label) tuples (this also turns the iamge path into a preprocessed image)
         data_batch = data.map(get_image_label).batch(BATCH_SIZE)
     else:
         print("\nCreating training dataset batches...\n")
-        # Turn filepaths and labels into Tensors
         data = tf.data.Dataset.from_tensor_slices((tf.constant(X), tf.constant(y)))
-        # Shuffling pathnames and labels before mapping image processor function is faster than shuffling images
         data = data.shuffle(buffer_size=len(X))
-        # Create (image, label) tuples (this also turns the image path into a preprocessed image)
-        # and turning into batches
         data_batch = data.map(get_image_label).batch(BATCH_SIZE)
     return data_batch
 
 
-# Creating training and validation batches
+# Batchuri pt testare si validare
 train_data = create_data_batches(X_train_images, y_train_labels)
 val_data = create_data_batches(X_val_images, y_val_labels, valid_data=True)
 
-# Check out the different attributes of our data batches
+
 print(train_data.element_spec)
 print(val_data.element_spec)
-
-
-# def show_25_images(images, labels):
-#     plt.figure(figsize=(10,10))
-#     for i in range(25):
-#         plt.subplot(5, 5, i+1)
-#         plt.imshow(images[i])
-#         plt.title(unique_signs[labels[i].argmax()])
-#         plt.axis("off")
-#
-#
-# # Visualizing traing batch
-# train_images, train_labels = next(train_data.as_numpy_iterator())
-# show_25_images(train_images, train_labels)
-# plt.show()
 
 
 INPUT_SHAPE = [IMG_SIZE, IMG_SIZE, 3]
@@ -208,24 +169,6 @@ model_saved = CNN.fit(x=train_data,
 
 CNN.save('mymodel', model_saved)
 print("\nModel saved!\n")
-
-# plt.plot(model_saved.history['loss'], label = 'training loss')
-# plt.plot(model_saved.history['val_loss'], label = 'validation loss')
-# plt.legend()
-# plt.show()
-#
-# plt.plot(model_saved.history['accuracy'], label = 'training accuracy')
-# plt.plot(model_saved.history['val_accuracy'], label = 'validation accuracy')
-# plt.legend()
-# plt.show()
-
-
-
-
-
-
-
-
 
 
 # Cream batchurile pt test
