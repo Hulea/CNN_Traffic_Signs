@@ -1,9 +1,8 @@
-import cv2 as cv
 import tensorflow as tf
+import cv2 as cv
 import numpy as np
-import pandas
-from PIL import Image
-import matplotlib.pyplot as plt
+import tkinter as tk
+from tkinter import filedialog
 
 classes = {0: 'Speed limit (20km/h)',
            1: 'Speed limit (30km/h)',
@@ -50,35 +49,22 @@ classes = {0: 'Speed limit (20km/h)',
            42: 'End no passing veh > 3.5 tons'}
 
 
+path = 'E:/~PI/Traffic_Sign_Detection'
+
 CNN = tf.keras.models.load_model('mymodel')
 
+root = tk.Tk()
+root.withdraw()
+file_path = filedialog.askopenfilename()
+image = cv.imread(file_path, cv.IMREAD_COLOR)
+cv.imshow("src", image)
+cv.waitKey(0)
 
-test = pandas.read_csv('E:/~PI/Traffic_Sign_Detection/german/Test.csv')
-labels = test["ClassId"].values
-test_imgs = test["Path"].values
+image2 = cv.resize(image, (32, 32))
+image2 = tf.keras.utils.normalize(image2,axis=1)
+image2 = np.array(image2).reshape(-1, 32, 32, 3)
 
-img_index = 111
-image = Image.open('E:/~PI/Traffic_Sign_Detection/german/' + test_imgs[img_index])
-img = image.resize((32, 32))
-img = np.array(img) / 255.
-img = img.reshape(1, 32, 32, 3)
-print(img.shape)
-print(labels[img_index])
-print(int(np.argmax(CNN.predict(img), axis=-1)))
-print(classes[int(np.argmax(CNN.predict(img), axis=-1))])
-print()
-plt.imshow(image)
-plt.show()
+pred = CNN.predict(image2)
+print(classes[np.argmax(pred)])
 
 
-
-image = Image.open('E:/~PI/Traffic_Sign_Detection/asd5.bmp')
-img = image.resize((32, 32))
-img = np.array(img) / 255.
-img = img.reshape(1, 32, 32, 3)
-print(img.shape)
-print(int(np.argmax(CNN.predict(img), axis=-1)))
-print(classes[int(np.argmax(CNN.predict(img), axis=-1))])
-print()
-plt.imshow(image)
-plt.show()
