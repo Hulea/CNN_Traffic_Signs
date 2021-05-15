@@ -49,8 +49,6 @@ classes = {0: 'Speed limit (20km/h)',
            42: 'End no passing veh > 3.5 tons'}
 
 
-path = 'E:/~PI/Traffic_Sign_Detection'
-
 CNN = tf.keras.models.load_model('mymodel')
 
 root = tk.Tk()
